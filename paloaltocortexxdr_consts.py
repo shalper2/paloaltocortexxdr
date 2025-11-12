@@ -19,6 +19,15 @@ ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configu
 PARSE_ERR_MSG = "Unable to parse the error message. Please check the asset configuration and|or action parameters"
 ERR_PARSING_RESPONSE = "Error occurred while processing the response"
 VALID_VALUE_MSG = "Please provide a valid value in the {key}"
+MAX_TIMEOUT = 60 # timeout in seconds
+
+ERR_MISSING_QUERY = "Missing a valid query string for this action"
+ERR_FAILED_TO_START_QUERY = "Failed to start the query"
+ERR_QUERY_TIMEOUT = "Timed out while waiting for query results"
+ERR_ALERT_STATUS = "Invalid value for alert status"
+ERR_ALERT_SEVERITY = "Invalid value for alert severity"
+ERR_MISSING_ALERT_ID = "Missing a valid alert ID"
+ERR_RESOLVE_COMMENT_ON_ACTIVE = "Cannot leave a resolve comment on an active incident"
 
 # Integer validation constants
 VALID_INTEGER_MSG = "Please provide a valid integer value in the {key}"
@@ -44,6 +53,37 @@ STATUS_ACTION_PARAM = "'status' action parameter"
 SEVERITY_ACTION_PARAM = "'severity' action parameter"
 
 # Value Lists
+ALERT_STATUS = ["new", 
+                "resolved_threat_handled", 
+                "under_investigation", 
+                "resolved_security_testing", 
+                "resolved_auto", 
+                "resolved_known_issue", 
+                "resolved_duplicate", 
+                "resolved_other",
+                "resolved_false_positive",
+                "resolved_true_positive"
+                ]
+ALERT_SEVERITY = ["critical",
+                  "high",
+                  "medium",
+                  "low",
+                  "informational"
+                  ]
+INCIDENT_STATUS = ["new",
+                   "under_investigation",
+                   "resolved_duplicate",
+                   "resolved_security_testing",
+                   "resolved_true_positive",
+                   "resolved_false_positive",
+                   "resolved_other",
+                   "resolved_known_issue"
+                   ]
+INCIDENT_SEVERITY = ["critical",
+                    "high",
+                    "medium",
+                    "low"
+                    ]
 PLATFORMS_LIST = ["windows", "linux", "macos", "android"]
 SCAN_STATUSES = ["none", "pending", "in_progress", "canceled", "aborted", "pending_cancellation", "success", "error"]
 SORT_ORDERS = ["asc", "desc"]

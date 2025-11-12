@@ -1952,6 +1952,198 @@
                 "type": "table"
             },
             "versions": "EQ(*)"
+        },
+        {
+            "action": "update alerts",
+            "description": "Update an alert.",
+            "type": "generic",
+            "identifier": "update_alert",
+            "read_only": false,
+            "parameters": {
+                "alert_id": {
+                    "required": true,
+                    "description": "ID of alert you would like to update",
+                    "data_type": "string",
+                    "default": false,
+                    "order": 0
+                },
+                "status": {
+                    "description": "status",
+                    "required": true,
+                    "data_type": "string",
+                    "value_list": [
+                        "new", 
+                        "resolved_threat_handled", 
+                        "under_investigation", 
+                        "resolved_security_testing", 
+                        "resolved_auto", 
+                        "resolved_known_issue", 
+                        "resolved_duplicate", 
+                        "resolved_other",
+                        "resolved_false_positive",
+                        "resolved_true_positive"
+                    ],
+                    "order": 1
+                },
+                "comment": {
+                    "description": "Updated text that appears in the Resolution Comment field of the Alerts table.",
+                    "data_type": "string",
+                    "order": 2
+                },
+                "severity": {
+                    "description": "Administrator-defined severity.",
+                    "data_type": "string",
+                    "value_list": [
+                        "critical",
+                        "high",
+                        "medium",
+                        "low",
+                        "informational"   
+                    ],
+                    "order": 3
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.alert_id",
+                    "data_type": "string",
+                    "column_name": "alert_id",
+                    "column_order": 0
+                }
+            ],
+            "render": {
+                "type": "table"
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "make xql query",
+            "description": "Execute an xql query",
+            "type": "investigate",
+            "identifier": "make_query",
+            "read_only": false,
+            "parameters": {
+                "query": {
+                    "required": true,
+                    "description": "The xql query to be executed",
+                    "data_type": "string",
+                    "primary": true,
+                    "order": 0
+                },
+                "tenants": {
+                    "required": false,
+                    "description": "Comma delimited list of strings used for running APIs on local and Managed Security tenant. Only used when querying tenants managed by Managed Security Services Providers",
+                    "data_type": "string",
+                    "order": 1
+                },
+                "start_time": {
+                    "required": true,
+                    "description": "Integer in timestamp epoch milliseconds representing the start of the search timeframe"
+                    "data_type": "string",
+                    "order": 2
+                },
+                "end_time": {
+                    "required": false,
+                    "description": "Integer in timestamp epoch milliseconds representing the end of the search timeframe. Defaults to now if left empty."
+                    "data_type": "string",
+                    "order": 3
+                }
+            },
+            "render": {
+                "type": "table"
+            },
+            "output": [
+                {
+                    "datapath": "action_result.response",
+                    "datatype": "string"
+                },
+                {
+                    "datapath": "action_result",
+                    "datatype":
+                },
+                {
+                    "datapath": "action_result",
+                    "datatype":
+                },
+                {
+                    "datapath": "action_result",
+                    "datatype":
+                },
+            ]
+        },
+        {
+            "action": "update incident",
+            "description": "Update an incident.",
+            "type": "generic",
+            "identifier": "update_incident",
+            "read_only": false,
+            "parameters": {
+                "incident_id": {
+                    "required": true,
+                    "description": "ID of incident you would like to update",
+                    "data_type": "string",
+                    "order": 0
+                },
+                "assigned_user_mail": {
+                    "description": "Updated email address of the incident assignee.",
+                    "data_type": "string",
+                    "order": 1
+                },
+                "status": {
+                    "description": "updated incident status",
+                    "required": true,
+                    "data_type": "string",
+                    "value_list": [
+                        "new",
+                        "under_investigation",
+                        "resolved_duplicate",
+                        "resolved_security_testing",
+                        "resolved_true_positive",
+                        "resolved_false_positive",
+                        "resolved_other",
+                        "resolved_known_issue"
+                    ],
+                    "order": 2
+                },
+                "resolve_comment": {
+                    "description": "Descriptive comment explaining the incident change. This can be set only for resolved incidents.",
+                    "data_type": "string",
+                    "order": 3
+                },
+                "comment": {
+                    "description": "Add a comment to the incident.",
+                    "data_type": "string",
+                    "order": 4
+                },
+                "notes": {
+                    "description": "Notes for the incident. If there are already notes, these notes will replace existing notes.",
+                    "data_type": "string",
+                    "order": 5
+                },
+                "severity": {
+                    "description": "Administrator-defined severity.",
+                    "data_type": "string",
+                    "value_list": [
+                        "critical",
+                        "high",
+                        "medium",
+                        "low"
+                    ],
+                    "order": 6
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.bool",
+                    "data_type": "boolean",
+                    "column_name": "bool",
+                    "column_order": 0
+                }
+            ],
+            "render": {
+                "type": "table"
+            },
+            "versions": "EQ(*)"
         }
     ]
 }

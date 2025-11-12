@@ -19,6 +19,7 @@ import hashlib
 import json
 import secrets
 import string
+import time
 from datetime import datetime, timedelta, timezone
 
 # Phantom App imports
@@ -1478,6 +1479,192 @@ class TestConnector(BaseConnector):
         # BaseConnector will create a textual message based off of the summary dictionary
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    # TODO: Need to validate these new actions
+    def _handle_update_alert(self, param):
+        # use self.save_progress(...) to send progress messages back to the platform
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
+
+        # Add an action result object to self (BaseConnector) to represent the action for this param
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        # Access action parameters passed in the 'param' dictionary
+        alert_id = param.get("alert_id")
+        severity = param.get("severity")
+        status = param.get("status")
+        comment = param.get("comment")
+
+        update_data, request_data, parameters = {}, {}, {}
+        
+        if alert_id:
+            request_data["alert_id"] = [alert_id]
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_MISSING_ALERT_ID)
+        if status in ALERT_STATUS:
+            update_data["status"] = status
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_ALERT_STATUS)
+        if severity in ALERT_SEVERITY:
+            update_data["severity"] = severity 
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_ALERT_SEVERITY)
+        if comment:
+            update_data["comment"] = comment
+
+        # Send request
+        request_data["update_data"] = update_data
+        parameters["request_data"] = request_data
+        headers = self.authenticationHeaders()
+        ret_val, response = self._make_rest_call("/public_api/v1/alerts/update_alerts", action_result, headers=headers, json=parameters)
+        
+        if phantom.is_fail(ret_val):
+            return action_result.set_status()
+
+        action_result.add_data(response)
+        return action_result.set_status(phantom.APP_SUCCESS)
+    
+    def _handle_update_incident(self, param):
+        # use self.save_progress(...) to send progress messages back to the platform
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
+
+        # Add an action result object to self (BaseConnector) to represent the action for this param
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        # Access action parameters passed in the 'param' dictionary
+        incident_id = param.get("incident_id")
+        assigned_user_email = param.get("assigned_user_email")
+        manual_severity = param.get("manual_severity")
+        notes = param.get("notes")
+        resolve_comment = param.get("resolve_comment")
+        status = param.get("status")
+        comment = param.get("comment")
+
+        update_data, request_data, parameters = {}, {}, {}
+        
+        if incident_id:
+            request_data["incident_id"] = incident_id
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_MISSING_ALERT_ID)
+        if assigned_user_email:
+            update_data["assigned_user_email"] = assigned_user_email
+        if status in INCIDENT_STATUS:
+            update_data["status"] = status
+            if "resolved" in status and resolve_comment:
+                update_data["resolve_comment"] = resolve_comment
+            else:
+                return action_result.set_status(phantom.APP_ERROR, ERR_RESOLVE_COMMENT_ON_ACTIVE)
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_ALERT_STATUS)
+        if manual_severity in INCIDENT_SEVERITY:
+            update_data["manual_severity"] = manual_severity 
+        if comment:
+            update_data["comment"] = comment
+        if notes:
+            update_data["notes"] = notes
+
+        # Send request
+        request_data["update_data"] = update_data
+        parameters["request_data"] = request_data
+        headers = self.authenticationHeaders()
+        ret_val, response = self._make_rest_call("/public_api/v1/alerts/update_alerts", action_result, headers=headers, json=parameters)
+        
+        if phantom.is_fail(ret_val):
+            return action_result.set_status()
+
+        action_result.add_data(response)
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _handle_make_query(self, param):
+        """_handle_make_query
+        
+        Make a query using the cortex api and wait on the results.
+
+        Returns: query_id
+        """
+        # use self.save_progress(...) to send progress messages back to the platform
+        self.save_progress(f"In action handler for: {self.get_action_identifier()}")
+
+        # Add an action result object to self (BaseConnector) to represent the action for this param
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        # Access action parameters passed in the 'param' dictionary
+        query = param.get("query")
+        tenants = param.get("tenants")
+        start_time = param.get("start_time")
+        end_time = param.get("end_time")
+
+        request_data, parameters, timeframe = {}, {}, {}
+
+        if query:
+            request_data["query"] = query
+        else:
+            return action_result.set_status(phantom.APP_ERROR, ERR_MISSING_QUERY)
+        if tenants:
+            tenants = [item.strip() for item in tenants.split(",")]
+            request_data["tenants"] = tenants
+        if start_time:
+            timeframe["start_time"] = start_time
+        if end_time:
+            timeframe["end_time"] = end_time
+        else:
+            timeframe["end_time"] = time.time()
+
+            
+        # build params
+        request_data["timeframe"] = timeframe
+        parameters["request_data"] = request_data
+        headers = self.authenticationHeaders()
+
+        # start the job and get the query_id for use in result retrieval
+        ret_val, query_id = self._create_query("/public_api/v1/xql/start_xql_query", action_result, headers, parameters)
+        if ret_val != 200 or query_id  == None:
+            return action_result.set_status(phantom.APP_ERROR, ERR_FAILED_TO_START_QUERY)
+
+        # build a new set of parameters
+        request_data, parameters = {}, {}
+        request_data["limit"] = 1000
+        request_data["format"] = "json"
+
+        parameters["request_data"] = request_data
+        ret_val, response = self._wait_for_query_response(action_result, headers, parameters)
+        if ret_val == 408:
+            return action_result.set_status(phantom.APP_ERROR, ERR_QUERY_TIMEOUT)
+        
+        if phantom.is_fail(ret_val):
+            return action_result.set_status()
+
+        action_result.add_data(response)
+        return action_result.set_status(phantom.APP_SUCCESS)
+    
+    def _wait_for_query_response(self, action_result, headers, payload):
+        # timeing out the search may not be necessary but seems smart in case there is a crash
+        sr_timeout = time.time() + MAX_TIMEOUT
+        # make initial call (should return pending)
+        ret_val, response = self._make_rest_call("/public_api/v1/xql/get_query_results", action_result, headers=headers, json=payload)
+
+        if ret_val != 200:
+           return RetVal(ret_val, response)
+
+        while response["reply"]["status"] == "PENDING":
+            if time.time() < sr_timeout:
+                return RetVal(408, None)
+            time.sleep(2)
+            ret_val, response = self._make_rest_call("/public_api/v1/xql/get_query_results", action_result, headers=headers, json=payload)
+
+        return RetVal(ret_val, response)
+
+
+    def _create_query(self, endpoint, action_result, headers, payload):
+        ret_val, response = self._make_rest_call(endpoint, action_result, headers=headers, json=payload)
+
+        try:
+            job_id = response["reply"]
+        except KeyError:
+            job_id = None
+
+
+        return RetVal(ret_val, job_id)
+
+
     def handle_action(self, param):
         ret_val = phantom.APP_SUCCESS
 
@@ -1540,6 +1727,15 @@ class TestConnector(BaseConnector):
         elif action_id == "get_alerts":
             ret_val = self._handle_get_alerts(param)
 
+        elif action_id == "update_alerts":
+            ret_val = self._handle_update_alert(param)
+
+        elif action_id == "update_incident":
+            ret_val = self._handle_update_incident(param)
+        
+        elif action_id == "make_query":
+            ret_val = self._handle_make_query(param)
+        
         return ret_val
 
     def initialize(self):
