@@ -2038,13 +2038,13 @@
                 },
                 "start_time": {
                     "required": true,
-                    "description": "Integer in timestamp epoch milliseconds representing the start of the search timeframe"
+                    "description": "Integer in timestamp epoch milliseconds representing the start of the search timeframe",
                     "data_type": "string",
                     "order": 2
                 },
                 "end_time": {
                     "required": false,
-                    "description": "Integer in timestamp epoch milliseconds representing the end of the search timeframe. Defaults to now if left empty."
+                    "description": "Integer in timestamp epoch milliseconds representing the end of the search timeframe. Defaults to now if left empty.",
                     "data_type": "string",
                     "order": 3
                 }
