@@ -2054,22 +2054,11 @@
             },
             "output": [
                 {
-                    "datapath": "action_result.response",
-                    "datatype": "string"
-                },
-                {
-                    "datapath": "action_result",
-                    "datatype":
-                },
-                {
-                    "datapath": "action_result",
-                    "datatype":
-                },
-                {
-                    "datapath": "action_result",
-                    "datatype":
-                },
-            ]
+                    "data_path": "action_result.response",
+                    "data_type": "string"
+                }
+            ],
+            "versions": "EQ(*)"
         },
         {
             "action": "update incident",
