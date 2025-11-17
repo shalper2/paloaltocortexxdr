@@ -1514,10 +1514,15 @@ class TestConnector(BaseConnector):
         request_data["update_data"] = update_data
         parameters["request_data"] = request_data
         headers = self.authenticationHeaders()
+
+        self.save_progress(f"Parameters JSON: {parameters}")
+
         ret_val, response = self._make_rest_call("/public_api/v1/alerts/update_alerts", action_result, headers=headers, json=parameters)
+
+        self.save_progress(f"Response JSON: {response}")
         
         if phantom.is_fail(ret_val):
-            return action_result.set_status()
+            return action_result.get_status()
 
         action_result.add_data(response)
         return action_result.set_status(phantom.APP_SUCCESS)
@@ -1568,7 +1573,7 @@ class TestConnector(BaseConnector):
         ret_val, response = self._make_rest_call("/public_api/v1/alerts/update_alerts", action_result, headers=headers, json=parameters)
         
         if phantom.is_fail(ret_val):
-            return action_result.set_status()
+            return action_result.get_status()
 
         action_result.add_data(response)
         return action_result.set_status(phantom.APP_SUCCESS)
@@ -1578,7 +1583,7 @@ class TestConnector(BaseConnector):
         
         Make a query using the cortex api and wait on the results.
 
-        Returns: query_id
+        Returns: the first 1000 query results
         """
         # use self.save_progress(...) to send progress messages back to the platform
         self.save_progress(f"In action handler for: {self.get_action_identifier()}")
@@ -1614,23 +1619,36 @@ class TestConnector(BaseConnector):
         parameters["request_data"] = request_data
         headers = self.authenticationHeaders()
 
+        self.save_progress(f"Parameters JSON: {parameters}")
+
         # start the job and get the query_id for use in result retrieval
         ret_val, query_id = self._create_query("/public_api/v1/xql/start_xql_query", action_result, headers, parameters)
         if ret_val != 200 or query_id  == None:
             return action_result.set_status(phantom.APP_ERROR, ERR_FAILED_TO_START_QUERY)
 
+        self.save_progress(f"Query ID: {query_id}")
+
         # build a new set of parameters
         request_data, parameters = {}, {}
-        request_data["limit"] = 1000
+        # more of a default value. returned queries with more than 1000 results send a stream_id which would have to be handled in a different manner.
+        request_data["limit"] = 1000  
         request_data["format"] = "json"
+        request_data["query_id"] = query_id 
 
         parameters["request_data"] = request_data
+
+        self.save_progress(f"Get Query request parameters JSON: {parameters}")
+
         ret_val, response = self._wait_for_query_response(action_result, headers, parameters)
+
+        self.save_progress(f"_wait_for_query_response returned with {ret_val} and JSON: {response}")
+
+        # this is not a code that the actual api returns, its just a way for use to track timeouts on the client side
         if ret_val == 408:
             return action_result.set_status(phantom.APP_ERROR, ERR_QUERY_TIMEOUT)
         
         if phantom.is_fail(ret_val):
-            return action_result.set_status()
+            return action_result.get_status()
 
         action_result.add_data(response)
         return action_result.set_status(phantom.APP_SUCCESS)
@@ -1638,6 +1656,9 @@ class TestConnector(BaseConnector):
     def _wait_for_query_response(self, action_result, headers, payload):
         # timeing out the search may not be necessary but seems smart in case there is a crash
         sr_timeout = time.time() + MAX_TIMEOUT
+
+        self.save_progress(f"Getting query results with timeout: {sr_timeout}")
+
         # make initial call (should return pending)
         ret_val, response = self._make_rest_call("/public_api/v1/xql/get_query_results", action_result, headers=headers, json=payload)
 
@@ -1645,7 +1666,7 @@ class TestConnector(BaseConnector):
            return RetVal(ret_val, response)
 
         while response["reply"]["status"] == "PENDING":
-            if time.time() < sr_timeout:
+            if time.time() > sr_timeout:
                 return RetVal(408, None)
             time.sleep(2)
             ret_val, response = self._make_rest_call("/public_api/v1/xql/get_query_results", action_result, headers=headers, json=payload)
@@ -1657,12 +1678,12 @@ class TestConnector(BaseConnector):
         ret_val, response = self._make_rest_call(endpoint, action_result, headers=headers, json=payload)
 
         try:
-            job_id = response["reply"]
+            query_id = response["reply"]
         except KeyError:
-            job_id = None
+            query_id = None
 
 
-        return RetVal(ret_val, job_id)
+        return RetVal(ret_val, query_id)
 
 
     def handle_action(self, param):
