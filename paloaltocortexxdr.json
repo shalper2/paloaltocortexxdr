@@ -2005,9 +2005,9 @@
             },
             "output": [
                 {
-                    "data_path": "action_result.alert_id",
+                    "data_path": "action_result.data",
                     "data_type": "string",
-                    "column_name": "alert_id",
+                    "column_name": "results",
                     "column_order": 0
                 }
             ],
@@ -2054,7 +2054,7 @@
             },
             "output": [
                 {
-                    "data_path": "action_result.response",
+                    "data_path": "action_result.data",
                     "data_type": "string"
                 }
             ],
@@ -2123,9 +2123,9 @@
             },
             "output": [
                 {
-                    "data_path": "action_result.bool",
-                    "data_type": "boolean",
-                    "column_name": "bool",
+                    "data_path": "action_result.data",
+                    "data_type": "string",
+                    "column_name": "response",
                     "column_order": 0
                 }
             ],
