@@ -1968,7 +1968,7 @@
                     "order": 0
                 },
                 "status": {
-                    "description": "status",
+                    "description": "new status for alert (use app defined values)",
                     "required": true,
                     "data_type": "string",
                     "value_list": [
@@ -1991,7 +1991,7 @@
                     "order": 2
                 },
                 "severity": {
-                    "description": "Administrator-defined severity.",
+                    "description": "Administrator-defined severity (use app defined values)",
                     "data_type": "string",
                     "value_list": [
                         "critical",
@@ -2079,7 +2079,7 @@
                     "order": 1
                 },
                 "status": {
-                    "description": "updated incident status",
+                    "description": "updated incident status (use app defined values)",
                     "required": true,
                     "data_type": "string",
                     "value_list": [
@@ -2110,7 +2110,7 @@
                     "order": 5
                 },
                 "severity": {
-                    "description": "Administrator-defined severity.",
+                    "description": "Administrator-defined severity (use app defined values)",
                     "data_type": "string",
                     "value_list": [
                         "critical",
